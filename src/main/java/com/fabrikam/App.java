@@ -1,15 +1,16 @@
 package com.fabrikam;
 
-/**
- * Hello world!
- *
- */
-public class App 
-{
-    public static void main( String[] args )
-    {
-	//System.out.println("Hello World!");
-	Indexer ind = new Indexer();
-	ind.index("BM25");
+import org.apache.lucene.queryparser.classic.ParseException;
+
+public class App {
+    public static void main(String[] args) {
+		test("BM25");
     }
+
+	public static void test(String method) {
+		System.out.println("Testing " + method + " method...");
+		
+		Indexer indexer = new Indexer();
+		indexer.index(method);
+	}
 }
