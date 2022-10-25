@@ -47,8 +47,10 @@ public class Indexer {
 				BufferedReader br = new BufferedReader(isr);
 				System.out.println("Buffer reader created.");
 
-				String l = br.readLine();
-				System.out.println(l);
+				for (String l = br.readLine(); l != null; l = br.readLine()) {
+					System.out.println(l);
+				}
+
 			} finally {
 				indexDir.close();
 				iwriter.close();
