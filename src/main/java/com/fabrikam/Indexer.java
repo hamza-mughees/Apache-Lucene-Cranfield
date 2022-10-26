@@ -16,6 +16,8 @@ import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.TextField;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +26,7 @@ import java.io.BufferedReader;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Indexer {
 	public static void index(String method) {
@@ -46,6 +49,7 @@ public class Indexer {
 
 			IndexWriter iwriter = new IndexWriter(indexDir, config);
 
+			/*
 			try (InputStream is = Files.newInputStream(docFilePath)) {
 				InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
 				BufferedReader br = new BufferedReader(isr);
@@ -57,10 +61,11 @@ public class Indexer {
 					Document doc = new Document();
 
 					if (l.startsWith(DocTags.ID.tag)) {
-						String text = l.substring(3, l.length());
-						doc.add(new StringField(DocTags.ID.name, text, Field.Store.YES));
+						String sfValue = l.substring(3, l.length());
+						doc.add(new StringField(DocTags.ID.name, sfValue, Field.Store.YES));
 
 						//System.out.println(doc.get(DocTags.ID.name));
+						iwriter.addDocument(doc);
 					}
 				}
 
@@ -68,9 +73,44 @@ public class Indexer {
 				indexDir.close();
 				iwriter.close();
 			}
+			*/
+
+			FieldType vectorField = new FieldType(TextField.TYPE_STORED);
+			vectorField.setTokenized(true);
+			vectorField.setStoreTermVectors(true);
+			vectorField.setStoreTermVectorPositions(true);
+			vectorField.setStoreTermVectorOffsets(true);
+			vectorField.setStoreTermVectorPayloads(true);
+
+			ArrayList<Document> docs = new ArrayList<>();
+
+			String content = new String(Files.readAllBytes(docFilePath));
+			String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+)");
+			System.out.println(Arrays.toString(items));
+			for (String item : items) {
+				if (!item.isEmpty()) {
+					docs.add(process(item, vectorField));
+				}
+			}
+
+			iwriter.addDocuments(docs);
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
+
+	public static Document process(String item, FieldType fieldType) {
+		Document doc = new Document();
+		String[] fields = item.split(".[TAWB]([\r\n]|\r\n)", -1);
+
+		doc.add(new StringField(DocTags.ID.name, fields[0].trim(), Field.Store.YES));
+		doc.add(new StringField(DocTags.TITLE.name, fields[1].trim(), Field.Store.YES));
+		doc.add(new StringField(DocTags.AUTHOR.name, fields[2].trim(), Field.Store.YES));
+		doc.add(new StringField(DocTags.BIBLIOGRAPHY.name, fields[3].trim(), Field.Store.YES));
+		doc.add(new Field(DocTags.TEXT.name, fields[4].trim(), fieldType));
+
+		return doc;
+	}
+
 }
