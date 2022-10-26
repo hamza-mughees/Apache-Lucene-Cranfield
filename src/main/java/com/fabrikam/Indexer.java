@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 public class Indexer {
 	public static void index(String method) {
-		System.out.println(method);
+		//System.out.println(method);
 		try {
 			Path docFilePath = Paths.get("cran/cran.all.1400");
 			Path indexDirPath = Paths.get("index/" + method);
@@ -41,39 +41,13 @@ public class Indexer {
 			IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
+/*
 			if (method.equals("BM25")) {
 				config.setSimilarity(new BM25Similarity());
 				System.out.println("Similarity method set.");
 			}
-
+*/
 			IndexWriter iwriter = new IndexWriter(indexDir, config);
-
-			/*
-			try (InputStream is = Files.newInputStream(docFilePath)) {
-				InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-				BufferedReader br = new BufferedReader(isr);
-				System.out.println("Buffer reader created.");
-
-				for (String l = br.readLine(); l != null; l = br.readLine()) {
-					//System.out.println(l);
-
-					Document doc = new Document();
-
-					if (l.startsWith(DocTags.ID.tag)) {
-						String sfValue = l.substring(3, l.length());
-						doc.add(new StringField(DocTags.ID.name, sfValue, Field.Store.YES));
-
-						//System.out.println(doc.get(DocTags.ID.name));
-						iwriter.addDocument(doc);
-					}
-				}
-
-			} finally {
-				indexDir.close();
-				iwriter.close();
-			}
-			*/
 
 			FieldType vectorField = new FieldType(TextField.TYPE_STORED);
 			vectorField.setTokenized(true);
@@ -86,21 +60,23 @@ public class Indexer {
 
 			String content = new String(Files.readAllBytes(docFilePath));
 			String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+)");
-			System.out.println(Arrays.toString(items));
+			//System.out.println(Arrays.toString(items));
 			for (String item : items) {
 				if (!item.isEmpty()) {
-					docs.add(process(item, vectorField));
+					docs.add(generateFieldsDoc(item, vectorField));
 				}
 			}
 
 			iwriter.addDocuments(docs);
 
+			indexDir.close();
+			iwriter.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
 
-	public static Document process(String item, FieldType fieldType) {
+	public static Document generateFieldsDoc(String item, FieldType fieldType) {
 		Document doc = new Document();
 		String[] fields = item.split(".[TAWB]([\r\n]|\r\n)", -1);
 
