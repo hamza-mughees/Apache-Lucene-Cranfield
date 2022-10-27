@@ -15,5 +15,11 @@ public class App {
 
 		Indexer indexer = new Indexer("cran/cran.all.1400", "index/" + method);
 		indexer.index(method);
+
+		Searcher searcher = new Searcher("index/" + method, ScoreAlgos.BM25);
+		searcher.createSearcher();
+
+		String qryFilePath = "cran/cran.qry";
+		searcher.runQrys(qryFilePath);
 	}
 }
