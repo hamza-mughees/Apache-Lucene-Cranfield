@@ -29,16 +29,19 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 public class Indexer {
-	public static void index(String method) {
-		//System.out.println(method);
-		try {
-			Path docFilePath = Paths.get("cran/cran.all.1400");
-			Path indexDirPath = Paths.get("index/" + method);
+	private Path docFilePath;
+	private Directory indexDir;
+	private Analyzer analyzer;
 
-			Analyzer analyzer = new EnglishAnalyzer();
+	public Indexer(String docFilePath, String indexDirPath) throws IOException {
+		this.docFilePath = Paths.get(docFilePath);
+		this.indexDir = FSDirectory.open(Paths.get(indexDirPath));
+		this.analyzer = new EnglishAnalyzer();
+	}
 
-			Directory indexDir = FSDirectory.open(indexDirPath);
-			IndexWriterConfig config = new IndexWriterConfig(analyzer);
+	public void index(String method) throws IOException {
+//		try {
+			IndexWriterConfig config = new IndexWriterConfig(this.analyzer);
 
 			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 /*
@@ -47,7 +50,7 @@ public class Indexer {
 				System.out.println("Similarity method set.");
 			}
 */
-			IndexWriter iwriter = new IndexWriter(indexDir, config);
+			IndexWriter iwriter = new IndexWriter(this.indexDir, config);
 
 			FieldType vectorField = new FieldType(TextField.TYPE_STORED);
 			vectorField.setTokenized(true);
@@ -58,7 +61,7 @@ public class Indexer {
 
 			ArrayList<Document> docs = new ArrayList<>();
 
-			String content = new String(Files.readAllBytes(docFilePath));
+			String content = new String(Files.readAllBytes(this.docFilePath));
 			String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+)");
 			//System.out.println(Arrays.toString(items));
 			for (String item : items) {
@@ -69,14 +72,14 @@ public class Indexer {
 
 			iwriter.addDocuments(docs);
 
-			indexDir.close();
+//			indexDir.close();
 			iwriter.close();
-		} catch (Exception e) {
-			System.out.println(e);
-		}
+//		} catch (Exception e) {
+//			System.out.println(e);
+//		}
 	}
 
-	public static Document generateFieldsDoc(String item, FieldType fieldType) {
+	public Document generateFieldsDoc(String item, FieldType fieldType) {
 		Document doc = new Document();
 		String[] fields = item.split(".[TAWB]([\r\n]|\r\n)", -1);
 
