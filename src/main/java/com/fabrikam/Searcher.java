@@ -3,14 +3,21 @@ package com.fabrikam;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.BooleanQuery;
+//import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.document.Document;
 
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -31,6 +38,7 @@ public class Searcher {
 		this.analyzer = new EnglishAnalyzer();
 	}
 
+	// might shift below method into constructor
 	public void createSearcher() throws IOException {
 		this.isearcher = new IndexSearcher(DirectoryReader.open(this.directory));
 
@@ -53,12 +61,21 @@ public class Searcher {
 		ArrayList<String> terms = new ArrayList<>();
 
 		while (ts.incrementToken()) {
-			System.out.println(termAtt.toString());
+//			System.out.println(termAtt.toString());
 			terms.add(termAtt.toString());
 		}
 
 		ts.close();
-		return null;
+
+		BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
+
+		for (String term : terms) {
+			TermQuery tQry = new TermQuery(new Term(DocTags.TEXT.name, term));
+			bqBuilder.add(tQry, BooleanClause.Occur.SHOULD);
+		}
+
+		TopDocs topDocs = this.isearcher.search(bqBuilder.build(), 5);
+		return topDocs.scoreDocs;
 	}
 
 	public void runQrys(String qryFilePath) throws IOException {
@@ -69,7 +86,14 @@ public class Searcher {
 			item = item.trim();
 
 			if (!item.isEmpty()) {
-				ScoreDoc[] res = query(item.split(DocTags.TEXT.tag + "([\r\n]|\r\n)")[1]);
+				ScoreDoc[] topHits = query(item.split(DocTags.TEXT.tag + "([\r\n]|\r\n)")[1]);
+
+				for (ScoreDoc topHit : topHits) {
+					Document doc = isearcher.doc(topHit.doc);
+
+					System.out.println(doc.toString());
+				}
+
 				break; // to run just one query for testing
 			}
 		}
