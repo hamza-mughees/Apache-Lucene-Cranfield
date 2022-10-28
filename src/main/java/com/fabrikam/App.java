@@ -19,7 +19,6 @@ public class App {
 		Searcher searcher = new Searcher("index/" + method, ScoreAlgos.BM25);
 		searcher.createSearcher();
 
-		String qryFilePath = "cran/cran.qry";
-		searcher.runQrys(qryFilePath);
+		searcher.runQrys("cran/cran.qry", "results", "BM25.txt", 30);
 	}
 }

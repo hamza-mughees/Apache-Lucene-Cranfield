@@ -23,6 +23,8 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.PrintWriter;
 
 import java.util.ArrayList;
 
@@ -53,7 +55,7 @@ public class Searcher {
 	}
 
 	// TODO: Complete below function
-	public ScoreDoc[] query(String query) throws IOException {
+	public ScoreDoc[] query(String query, int nTop) throws IOException {
 		TokenStream ts = this.analyzer.tokenStream(DocTags.TEXT.name, query);
 		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
 		ts.reset();
@@ -74,28 +76,40 @@ public class Searcher {
 			bqBuilder.add(tQry, BooleanClause.Occur.SHOULD);
 		}
 
-		TopDocs topDocs = this.isearcher.search(bqBuilder.build(), 5);
+		TopDocs topDocs = this.isearcher.search(bqBuilder.build(), nTop);
 		return topDocs.scoreDocs;
 	}
 
-	public void runQrys(String qryFilePath) throws IOException {
+	public void runQrys(String qryFilePath, String resDirPath, String resFileName, int nTop) throws IOException {
+		File resDir = new File(resDirPath);
+		if (!resDir.exists())
+			resDir.mkdir();
+
+		PrintWriter pwriter = new PrintWriter(resDirPath + "/" + resFileName, "UTF-8");
+
 		String content = new String(Files.readAllBytes(Paths.get(qryFilePath)));
 		String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+[\n\r]+)");
 
-		for (String item : items) {
-			item = item.trim();
+		for (int qi = 0; qi < items.length; qi++) {
+			String item = items[qi].trim();
 
 			if (!item.isEmpty()) {
-				ScoreDoc[] topHits = query(item.split(DocTags.TEXT.tag + "([\r\n]|\r\n)")[1]);
+				ScoreDoc[] topHits = query(item.split(DocTags.TEXT.tag + "([\r\n]|\r\n)")[1], nTop);
 
-				for (ScoreDoc topHit : topHits) {
+				for (int di = 0; di < topHits.length; di++) {
+					ScoreDoc topHit = topHits[di];
 					Document doc = isearcher.doc(topHit.doc);
 
-					System.out.println(doc.toString());
+					pwriter.println(qi + " 0 " + doc.get(DocTags.ID.name) + " "
+									+ (di+1) + " " + topHit.score + " BM25");
+
+//					System.out.println(doc.toString());
 				}
 
-				break; // to run just one query for testing
+//				break; // to run just one query for testing
 			}
 		}
+
+		pwriter.close();
 	}
 }
