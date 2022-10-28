@@ -17,8 +17,6 @@ public class App {
 		indexer.index(method);
 
 		Searcher searcher = new Searcher("index/" + method, ScoreAlgos.BM25);
-		searcher.createSearcher();
-
 		searcher.runQrys("cran/cran.qry", "results", "BM25.txt", 30);
 	}
 }

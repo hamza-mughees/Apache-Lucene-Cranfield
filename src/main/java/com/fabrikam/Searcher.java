@@ -38,10 +38,6 @@ public class Searcher {
 		this.directory = FSDirectory.open(Paths.get(dirPath));
 		this.algorithm = algorithm;
 		this.analyzer = new EnglishAnalyzer();
-	}
-
-	// might shift below method into constructor
-	public void createSearcher() throws IOException {
 		this.isearcher = new IndexSearcher(DirectoryReader.open(this.directory));
 
 		switch (this.algorithm) {
@@ -54,27 +50,22 @@ public class Searcher {
 		}
 	}
 
-	// TODO: Complete below function
 	public ScoreDoc[] query(String query, int nTop) throws IOException {
 		TokenStream ts = this.analyzer.tokenStream(DocTags.TEXT.name, query);
 		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
 		ts.reset();
 
-		ArrayList<String> terms = new ArrayList<>();
+		BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
 
 		while (ts.incrementToken()) {
 //			System.out.println(termAtt.toString());
-			terms.add(termAtt.toString());
-		}
+			String term = termAtt.toString();
 
-		ts.close();
-
-		BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
-
-		for (String term : terms) {
 			TermQuery tQry = new TermQuery(new Term(DocTags.TEXT.name, term));
 			bqBuilder.add(tQry, BooleanClause.Occur.SHOULD);
 		}
+
+		ts.close();
 
 		TopDocs topDocs = this.isearcher.search(bqBuilder.build(), nTop);
 		return topDocs.scoreDocs;
