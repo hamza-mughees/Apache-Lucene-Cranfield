@@ -33,6 +33,7 @@ public class Searcher {
 	private ScoreAlgos algorithm;
 	private IndexSearcher isearcher;
 	private Analyzer analyzer;
+	private String resFileName;
 
 	public Searcher(String dirPath, ScoreAlgos algorithm) throws IOException {
 		this.directory = FSDirectory.open(Paths.get(dirPath));
@@ -43,9 +44,11 @@ public class Searcher {
 		switch (this.algorithm) {
 			case Classic:
 				this.isearcher.setSimilarity(new ClassicSimilarity());
+				this.resFileName = "Classic";
 				break;
 			case BM25:
 				this.isearcher.setSimilarity(new BM25Similarity());
+				this.resFileName = "BM25";
 				break;
 		}
 	}
@@ -71,12 +74,12 @@ public class Searcher {
 		return topDocs.scoreDocs;
 	}
 
-	public void runQrys(String qryFilePath, String resDirPath, String resFileName, int nTop) throws IOException {
+	public void runQrys(String qryFilePath, String resDirPath, int nTop) throws IOException {
 		File resDir = new File(resDirPath);
 		if (!resDir.exists())
 			resDir.mkdir();
 
-		PrintWriter pwriter = new PrintWriter(resDirPath + "/" + resFileName, "UTF-8");
+		PrintWriter pwriter = new PrintWriter(resDirPath + "/" + this.resFileName + ".txt", "UTF-8");
 
 		String content = new String(Files.readAllBytes(Paths.get(qryFilePath)));
 		String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+[\n\r]+)");
@@ -92,7 +95,7 @@ public class Searcher {
 					Document doc = isearcher.doc(topHit.doc);
 
 					pwriter.println(qi + " 0 " + doc.get(DocTags.ID.name) + " "
-									+ (di+1) + " " + topHit.score + " BM25");
+									+ (di+1) + " " + topHit.score + " " + this.resFileName);
 
 //					System.out.println(doc.toString());
 				}

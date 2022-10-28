@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.analysis.Analyzer;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -39,44 +38,35 @@ public class Indexer {
 		this.analyzer = new EnglishAnalyzer();
 	}
 
-	public void index(String method) throws IOException {
-//		try {
-			IndexWriterConfig config = new IndexWriterConfig(this.analyzer);
+	public void index() throws IOException {
+		IndexWriterConfig config = new IndexWriterConfig(this.analyzer);
 
-			config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-/*
-			if (method.equals("BM25")) {
-				config.setSimilarity(new BM25Similarity());
-				System.out.println("Similarity method set.");
+		config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+
+		IndexWriter iwriter = new IndexWriter(this.indexDir, config);
+
+		FieldType vectorField = new FieldType(TextField.TYPE_STORED);
+		vectorField.setTokenized(true);
+		vectorField.setStoreTermVectors(true);
+		vectorField.setStoreTermVectorPositions(true);
+		vectorField.setStoreTermVectorOffsets(true);
+		vectorField.setStoreTermVectorPayloads(true);
+
+		ArrayList<Document> docs = new ArrayList<>();
+
+		String content = new String(Files.readAllBytes(this.docFilePath));
+		String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+)");
+
+		for (String item : items) {
+			if (!item.isEmpty()) {
+				docs.add(generateFieldsDoc(item, vectorField));
 			}
-*/
-			IndexWriter iwriter = new IndexWriter(this.indexDir, config);
+		}
 
-			FieldType vectorField = new FieldType(TextField.TYPE_STORED);
-			vectorField.setTokenized(true);
-			vectorField.setStoreTermVectors(true);
-			vectorField.setStoreTermVectorPositions(true);
-			vectorField.setStoreTermVectorOffsets(true);
-			vectorField.setStoreTermVectorPayloads(true);
+		iwriter.addDocuments(docs);
 
-			ArrayList<Document> docs = new ArrayList<>();
-
-			String content = new String(Files.readAllBytes(this.docFilePath));
-			String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+)");
-			//System.out.println(Arrays.toString(items));
-			for (String item : items) {
-				if (!item.isEmpty()) {
-					docs.add(generateFieldsDoc(item, vectorField));
-				}
-			}
-
-			iwriter.addDocuments(docs);
-
-//			indexDir.close();
-			iwriter.close();
-//		} catch (Exception e) {
-//			System.out.println(e);
-//		}
+//		indexDir.close();
+		iwriter.close();
 	}
 
 	public Document generateFieldsDoc(String item, FieldType fieldType) {
