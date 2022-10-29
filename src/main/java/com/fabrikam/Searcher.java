@@ -7,6 +7,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.BooleanSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.search.similarities.MultiSimilarity;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
@@ -50,6 +53,14 @@ public class Searcher {
 			case BM25:
 				this.isearcher.setSimilarity(new BM25Similarity());
 				this.resFileName = "BM25";
+				break;
+			case BOOLEAN:
+				this.isearcher.setSimilarity(new BooleanSimilarity());
+				this.resFileName = "Boolean";
+				break;
+			case BM25_CLASSIC:
+				this.isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new ClassicSimilarity()}));
+				this.resFileName = "BM25_Classic";
 				break;
 		}
 	}
