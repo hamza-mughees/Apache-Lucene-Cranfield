@@ -22,8 +22,9 @@ git clone https://github.com/hamza-mughees/Apache-Lucene-Cranfield.git
 ## Index and Search
 In order to run the indexing of the 1400 Cranfield documents, and the searching with the 225 queries, run the following commands.
 ```
+cd Apache-Lucene-Cranfield
 mvn package
-java -jar target/LuceneCranfield-1.0.jar
+java -jar target/Apache-Lucene-Cranfield-1.0.jar
 ```
 ## Evaluate Performance
 Use the following commands to calculate the MAP for each output.
