@@ -61,6 +61,8 @@ public class Indexer {
 				this.indexDir = FSDirectory.open(Paths.get(indexDirPath + this.analyzerDir));
 				break;
 		}
+
+		System.out.println("Creating index using the " + this.analyzerDir.substring(0, this.analyzerDir.length()-1) + " analyzer.");
 	}
 
 	public void index() throws IOException {
@@ -90,7 +92,6 @@ public class Indexer {
 
 		iwriter.addDocuments(docs);
 
-//		indexDir.close();
 		iwriter.close();
 	}
 

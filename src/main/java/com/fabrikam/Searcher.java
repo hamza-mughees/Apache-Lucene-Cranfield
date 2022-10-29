@@ -63,6 +63,8 @@ public class Searcher {
 				this.resFileName = "BM25_Classic";
 				break;
 		}
+
+		System.out.println("Querying indexed directory using the " + this.resFileName + " score.\n");
 	}
 
 	public ScoreDoc[] query(String query, int nTop) throws IOException {
@@ -73,7 +75,6 @@ public class Searcher {
 		BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
 
 		while (ts.incrementToken()) {
-//			System.out.println(termAtt.toString());
 			String term = termAtt.toString();
 
 			TermQuery tQry = new TermQuery(new Term(DocTags.TEXT.name, term));
@@ -112,11 +113,7 @@ public class Searcher {
 
 					pwriter.println(qi + " 0 " + doc.get(DocTags.ID.name) + " "
 									+ (di+1) + " " + topHit.score + " " + this.resFileName);
-
-//					System.out.println(doc.toString());
 				}
-
-//				break; // to run just one query for testing
 			}
 		}
 
