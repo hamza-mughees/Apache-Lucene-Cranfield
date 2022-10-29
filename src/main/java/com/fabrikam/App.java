@@ -3,6 +3,8 @@ package com.fabrikam;
 import org.apache.lucene.queryparser.classic.ParseException;
 import java.util.Arrays;
 
+import org.apache.lucene.analysis.Analyzer;
+
 import java.io.IOException;
 
 public class App {
@@ -12,19 +14,14 @@ public class App {
 	private static String RES_DIR_PATH = "results";
 
     public static void main(String[] args) throws IOException {
-		index();
-
-		search(ScoreAlgos.BM25);
-		search(ScoreAlgos.Classic);
+		searchEngine(Analyzers.STANDARD, ScoreAlgos.BM25);
     }
 
-	public static void index() throws IOException {
-		Indexer indexer = new Indexer(CRAN_DOCS_PATH, INDEX_DIR_PATH);
-		indexer.index();
-	}
+	public static void searchEngine(Analyzers analyzer, ScoreAlgos algorithm) throws IOException {
+		Indexer indexer = new Indexer(CRAN_DOCS_PATH, INDEX_DIR_PATH, analyzer);
+        indexer.index();
 
-	public static void search(ScoreAlgos algorithm) throws IOException {
-		Searcher searcher = new Searcher(INDEX_DIR_PATH, algorithm);
+		Searcher searcher = new Searcher(INDEX_DIR_PATH, algorithm, indexer.getAnalyzer(), indexer.getAnalyzerDir());
 		searcher.runQrys(CRAN_QRYS_PATH, RES_DIR_PATH, 30);
 	}
 }

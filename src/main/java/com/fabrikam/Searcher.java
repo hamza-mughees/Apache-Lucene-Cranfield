@@ -34,11 +34,13 @@ public class Searcher {
 	private IndexSearcher isearcher;
 	private Analyzer analyzer;
 	private String resFileName;
+	private String analyzerDir;
 
-	public Searcher(String dirPath, ScoreAlgos algorithm) throws IOException {
-		this.directory = FSDirectory.open(Paths.get(dirPath));
+	public Searcher(String dirPath, ScoreAlgos algorithm, Analyzer analyzer, String analyzerDir) throws IOException {
+		this.analyzerDir = analyzerDir;
+		this.directory = FSDirectory.open(Paths.get(dirPath + this.analyzerDir));
 		this.algorithm = algorithm;
-		this.analyzer = new EnglishAnalyzer();
+		this.analyzer = analyzer;
 		this.isearcher = new IndexSearcher(DirectoryReader.open(this.directory));
 
 		switch (this.algorithm) {

@@ -8,7 +8,10 @@ import java.nio.charset.StandardCharsets;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.similarities.BM25Similarity;
@@ -31,11 +34,33 @@ public class Indexer {
 	private Path docFilePath;
 	private Directory indexDir;
 	private Analyzer analyzer;
+	private String analyzerDir;
 
-	public Indexer(String docFilePath, String indexDirPath) throws IOException {
+	public Indexer(String docFilePath, String indexDirPath, Analyzers analyzer) throws IOException {
 		this.docFilePath = Paths.get(docFilePath);
-		this.indexDir = FSDirectory.open(Paths.get(indexDirPath));
-		this.analyzer = new EnglishAnalyzer();
+
+		switch (analyzer) {
+			case STANDARD:
+				this.analyzer = new StandardAnalyzer();
+				this.analyzerDir = "standard/";
+				this.indexDir = FSDirectory.open(Paths.get(indexDirPath + this.analyzerDir));
+				break;
+			case ENGLISH:
+				this.analyzer = new EnglishAnalyzer();
+				this.analyzerDir = "english/";
+				this.indexDir = FSDirectory.open(Paths.get(indexDirPath + this.analyzerDir));
+				break;
+			case WHITESPACE:
+				this.analyzer = new WhitespaceAnalyzer();
+				this.analyzerDir = "whitespace/";
+				this.indexDir = FSDirectory.open(Paths.get(indexDirPath + this.analyzerDir));
+				break;
+			case SIMPLE:
+				this.analyzer = new SimpleAnalyzer();
+				this.analyzerDir = "simple/";
+				this.indexDir = FSDirectory.open(Paths.get(indexDirPath + this.analyzerDir));
+				break;
+		}
 	}
 
 	public void index() throws IOException {
@@ -82,4 +107,11 @@ public class Indexer {
 		return doc;
 	}
 
+	public String getAnalyzerDir() {
+		return this.analyzerDir;
+	}
+
+	public Analyzer getAnalyzer() {
+		return this.analyzer;
+	}
 }

@@ -89,3 +89,4 @@ nb-configuration.xml
 index/
 results/
 *.save
+trec_eval/
