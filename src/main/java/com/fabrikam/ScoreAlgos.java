@@ -1,6 +1,6 @@
 package com.fabrikam;
 
 public enum ScoreAlgos {
-	Classic,
+	CLASSIC,
 	BM25;
 }

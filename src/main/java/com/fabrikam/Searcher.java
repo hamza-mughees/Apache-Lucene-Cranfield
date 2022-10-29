@@ -9,7 +9,6 @@ import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.BooleanQuery;
-//import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.TopDocs;
@@ -44,7 +43,7 @@ public class Searcher {
 		this.isearcher = new IndexSearcher(DirectoryReader.open(this.directory));
 
 		switch (this.algorithm) {
-			case Classic:
+			case CLASSIC:
 				this.isearcher.setSimilarity(new ClassicSimilarity());
 				this.resFileName = "Classic";
 				break;
@@ -81,7 +80,11 @@ public class Searcher {
 		if (!resDir.exists())
 			resDir.mkdir();
 
-		PrintWriter pwriter = new PrintWriter(resDirPath + "/" + this.resFileName + ".txt", "UTF-8");
+		File outputDir = new File(resDirPath + "/" + this.analyzerDir);
+		if (!outputDir.exists())
+			outputDir.mkdir();
+
+		PrintWriter pwriter = new PrintWriter(resDirPath + "/" + this.analyzerDir + this.resFileName + ".txt", "UTF-8");
 
 		String content = new String(Files.readAllBytes(Paths.get(qryFilePath)));
 		String[] items = content.split(DocTags.ID.tag + " (?=[0-9]+[\n\r]+)");

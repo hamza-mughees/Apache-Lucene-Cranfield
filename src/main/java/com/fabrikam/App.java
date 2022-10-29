@@ -14,6 +14,7 @@ public class App {
 	private static String RES_DIR_PATH = "results";
 
     public static void main(String[] args) throws IOException {
+		searchEngine(Analyzers.STANDARD, ScoreAlgos.CLASSIC);
 		searchEngine(Analyzers.STANDARD, ScoreAlgos.BM25);
     }
 
